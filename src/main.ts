@@ -60,7 +60,7 @@ function loginRateLimit(req: Request, res: Response, next: NextFunction) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,{
+  const app = await NestFactory.create(AppModule, {
     // Excluimos 'log' para omitir el mapeo de rutas al arrancar
     logger: ['error', 'warn'], 
   });
@@ -78,14 +78,17 @@ async function bootstrap() {
 
   const corsOrigins = (
     process.env.CORS_ORIGIN ??
-    'http://localhost:4200,http://localhost:5173,http://localhost:8080'
+    'https://misalud-saas.netlify.app,http://localhost:5173,http://localhost:4200,http://localhost:8080'
   )
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+
   app.enableCors({
     origin: corsOrigins,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
   });
 
   const isProduction = (process.env.NODE_ENV ?? 'development') === 'production';
