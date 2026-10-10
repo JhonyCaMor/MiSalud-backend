@@ -1,0 +1,472 @@
+{
+  "info": {
+    "name": "MiSalud API",
+    "description": "Cadena de droguerías MiSalud - Backend NestJS\n\n1. Ejecuta \"Auth > Login Super Admin / Supervisor / Vendedor\" para obtener tokens (se guardan automáticamente en variables de colección).\n2. Los demás requests usan esos tokens automáticamente.\n\nRoles:\n- super_admin: acceso total\n- supervisor: solo sucursales/usuarios de SU ciudad\n- vendedor: solo SU sucursal",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_supervisor", "value": "" },
+    { "key": "token_supervisor_palmira", "value": "" },
+    { "key": "token_vendedor", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token_admin}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "0. Salud",
+      "item": [
+        {
+          "name": "Health check (público)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login Super Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('token_admin', json.accessToken);",
+                  "pm.expect(json.user.role).to.eql('super_admin');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@misalud.com\",\n  \"password\": \"Admin123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Supervisor Cali",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('token_supervisor', json.accessToken);",
+                  "pm.expect(json.user.role).to.eql('supervisor');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"supervisor.cali@misalud.com\",\n  \"password\": \"Supervisor123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Supervisor Palmira",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('token_supervisor_palmira', json.accessToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"supervisor.palmira@misalud.com\",\n  \"password\": \"Supervisor123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login Vendedor Cali",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('token_vendedor', json.accessToken);",
+                  "pm.expect(json.user.role).to.eql('vendedor');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendedor.cali@misalud.com\",\n  \"password\": \"Vendedor123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Mi perfil (cualquier rol)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Cambiar mi contraseña",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Vendedor123!\",\n  \"newPassword\": \"NuevaClave123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/password", "host": ["{{baseUrl}}"], "path": ["auth", "password"] }
+          }
+        },
+        {
+          "name": "Login con credencial inválida (401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@misalud.com\",\n  \"password\": \"PasswordErrada1\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Ciudades",
+      "item": [
+        {
+          "name": "Listar ciudades (Super Admin - 6)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cities", "host": ["{{baseUrl}}"], "path": ["cities"] }
+          }
+        },
+        {
+          "name": "Listar ciudades (Supervisor - solo su ciudad)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cities", "host": ["{{baseUrl}}"], "path": ["cities"] }
+          }
+        },
+        {
+          "name": "Listar ciudades (Vendedor - 403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/cities", "host": ["{{baseUrl}}"], "path": ["cities"] }
+          }
+        },
+        {
+          "name": "Crear ciudad (solo Super Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Florida\",\n  \"department\": \"Valle del Cauca\"\n}" },
+            "url": { "raw": "{{baseUrl}}/cities", "host": ["{{baseUrl}}"], "path": ["cities"] }
+          }
+        },
+        {
+          "name": "Crear ciudad como Supervisor (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ciudad Ilegal\"\n}" },
+            "url": { "raw": "{{baseUrl}}/cities", "host": ["{{baseUrl}}"], "path": ["cities"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Sucursales",
+      "item": [
+        {
+          "name": "Listar sucursales (Super Admin - 10)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Listar sucursales (Supervisor Cali - 2)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Listar sucursales (Vendedor - solo 1)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Detalle sucursal (Vendedor - 403 si es ajena)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/branches/3", "host": ["{{baseUrl}}"], "path": ["branches", "3"] }
+          }
+        },
+        {
+          "name": "Vendedores de una sucursal (Supervisor)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/branches/1/vendedores", "host": ["{{baseUrl}}"], "path": ["branches", "1", "vendedores"] }
+          }
+        },
+        {
+          "name": "Crear sucursal (solo Super Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"MiSalud Prueba\",\n  \"address\": \"Cra 1 #2-3\",\n  \"cityId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Crear sucursal como Supervisor (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sucursal Ilegal\",\n  \"cityId\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/branches", "host": ["{{baseUrl}}"], "path": ["branches"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios (Super Admin - todos)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Listar usuarios (Supervisor - solo vendedores de su ciudad)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Listar usuarios (Vendedor - 403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Buscar usuario (?search=&role=)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users?search=juan&role=vendedor",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "search", "value": "juan" },
+                { "key": "role", "value": "vendedor" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear vendedor (Supervisor en su ciudad - OK)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendedor.nuevo@misalud.com\",\n  \"password\": \"Vende1234\",\n  \"fullName\": \"Vendedor Nuevo\",\n  \"role\": \"vendedor\",\n  \"branchId\": 2\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Supervisor intenta crear super_admin (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.falso@misalud.com\",\n  \"password\": \"Hack1234\",\n  \"fullName\": \"Intento Admin\",\n  \"role\": \"super_admin\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Supervisor crea vendedor en otra ciudad (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ven.palmira@misalud.com\",\n  \"password\": \"Vende1234\",\n  \"fullName\": \"Vendedor Palmira\",\n  \"role\": \"vendedor\",\n  \"branchId\": 3\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Vendedor intenta crear usuarios (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"otro@misalud.com\",\n  \"password\": \"Vende1234\",\n  \"fullName\": \"Otro\",\n  \"role\": \"vendedor\",\n  \"branchId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Crear supervisor (Super Admin - OK)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"supervisor.nuevo@misalud.com\",\n  \"password\": \"Super1234\",\n  \"fullName\": \"Supervisor Nuevo\",\n  \"role\": \"supervisor\",\n  \"cityId\": 4\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Supervisor sin cityId (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sup.ncity@misalud.com\",\n  \"password\": \"Super1234\",\n  \"fullName\": \"Sup Sin Ciudad\",\n  \"role\": \"supervisor\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Contraseña débil (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"debil@misalud.com\",\n  \"password\": \"debil\",\n  \"fullName\": \"Password Debil\",\n  \"role\": \"vendedor\",\n  \"branchId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Editar usuario (Super Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Super Administrador\",\n  \"isActive\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/users/1", "host": ["{{baseUrl}}"], "path": ["users", "1"] }
+          }
+        },
+        {
+          "name": "Supervisor edita vendedor ajeno (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_supervisor}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Hacked Name\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/5", "host": ["{{baseUrl}}"], "path": ["users", "5"] }
+          }
+        },
+        {
+          "name": "Resetear contraseña (Super Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"newPassword\": \"NuevaClave123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/4/password", "host": ["{{baseUrl}}"], "path": ["users", "4", "password"] }
+          }
+        },
+        {
+          "name": "Desactivar usuario (Super Admin)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/users/5", "host": ["{{baseUrl}}"], "path": ["users", "5"] }
+          }
+        },
+        {
+          "name": "Vendedor elimina usuarios (403)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token_vendedor}}", "type": "string" }] },
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/users/4", "host": ["{{baseUrl}}"], "path": ["users", "4"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Swagger",
+      "item": [
+        {
+          "name": "Abrir documentación Swagger UI",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/docs", "host": ["{{baseUrl}}"], "path": ["docs"] }
+          }
+        }
+      ]
+    }
+  ]
+}
